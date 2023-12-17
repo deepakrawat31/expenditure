@@ -1,10 +1,11 @@
 <script setup lang="ts">
-   import { IconAsterisk } from "@tabler/icons-vue";
    import {
       IconCoins,
       IconCoin,
       IconPencil,
       IconArrowRight,
+      IconAsterisk,
+      IconCheck,
    } from "@tabler/icons-vue";
    import { ref } from "vue";
 
@@ -65,24 +66,40 @@
                   <span class="flex gap-6 font-semibold">
                      <label for="payout" class="flex items-center gap-2">
                         <span>Payout</span>
-                        <input
-                           type="radio"
-                           name="type"
-                           id="payout"
-                           value="payout"
-                           v-model="picked"
-                           required
-                        />
+                        <span class="relative flex">
+                           <input
+                              type="radio"
+                              name="type"
+                              id="payout"
+                              value="payout"
+                              v-model="picked"
+                              required
+                              class="opacity-0 aspect-square w-6 peer"
+                           />
+                           <span
+                              class="absolute inset-0 ring-2 ring-black/40 peer-hover:ring-black peer-checked:ring-black bg-slate-200/40 peer-checked:bg-lime-200"
+                           >
+                              <IconCheck />
+                           </span>
+                        </span>
                      </label>
                      <label for="expense" class="flex items-center gap-2">
                         <span>Expense</span>
-                        <input
-                           type="radio"
-                           name="type"
-                           id="expense"
-                           value="expense"
-                           v-model="picked"
-                        />
+                        <span class="relative flex">
+                           <input
+                              type="radio"
+                              name="type"
+                              id="expense"
+                              value="expense"
+                              v-model="picked"
+                              class="opacity-0 aspect-square w-6 peer"
+                           />
+                           <span
+                              class="absolute inset-0 ring-2 ring-black/40 peer-hover:ring-black peer-checked:ring-black bg-slate-200/40 peer-checked:bg-lime-200"
+                           >
+                              <IconCheck />
+                           </span>
+                        </span>
                      </label>
                   </span>
                </div>
@@ -97,6 +114,7 @@
                         name="Info"
                         id="info"
                         required
+                        autocomplete="off"
                         class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl font-semibold outline-none"
                      />
                      <span class="p-2 bg-lime-200 ring-2 ring-black">
@@ -111,10 +129,12 @@
                         <IconCoin :size="28" />
                      </span>
                      <input
-                        type="text"
+                        type="number"
                         name="amount"
                         id="amount"
                         required
+                        autocomplete="off"
+                        min="1"
                         class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl font-semibold outline-none"
                      />
                      <span class="p-2 bg-lime-200 ring-2 ring-black">
@@ -135,3 +155,16 @@
       <div class="ring-2 ring-black"></div>
    </section>
 </template>
+
+<style scoped>
+   input[type="number"] {
+      -webkit-appearance: textfield;
+      -moz-appearance: textfield;
+      appearance: textfield;
+   }
+
+   input[type="number"]::-webkit-inner-spin-button,
+   input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+   }
+</style>
