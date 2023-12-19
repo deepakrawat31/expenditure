@@ -6,14 +6,44 @@
       IconArrowRight,
       IconAsterisk,
       IconCheck,
+      IconBread,
    } from "@tabler/icons-vue";
-   import { ref } from "vue";
+   import { Ref, ref } from "vue";
 
-   let picked = ref("");
+   let radio: Ref<string> = ref("");
+   let info: Ref<string> = ref("");
+   let amount: Ref<number | null> = ref(null);
+   let toast: Ref<boolean> = ref(false);
+
+   const toastUp = () => {
+      toast.value = true;
+      console.log("toast up", toast.value);
+      setTimeout(() => {
+         toast.value = false;
+         console.log("toast down", toast.value);
+      }, 4000);
+   };
+
+   function submited(radio: string, info: string, amount: number | null) {
+      console.log(radio, info, amount);
+      toastUp();
+   }
 </script>
 
 <template>
    <main class="h-screen grid grid-cols-2 gap-0.5 bg-lime-200">
+      <div
+         v-if="toast"
+         class="fixed z-30 top-6 right-6 bg-lime-200 ring-2 ring-black uppercase font-semibold flex gap-0.5 translate-y-8 transition-all"
+         :class="{
+            [`translate-y-0`]: toast,
+         }"
+      >
+         <span class="p-2 ring-2 ring-black">
+            <IconBread />
+         </span>
+         <span class="p-2 tracking-wide">{{ radio }} added</span>
+      </div>
       <div
          class="flex flex-col items-start justify-center gap-6 h-full py-8 px-16 ring-2 ring-black"
       >
@@ -21,7 +51,8 @@
             >Track your expenses</span
          >
          <span class="text-lg">Get a hold of all your purchases.</span>
-         <button
+         <a
+            href="#form"
             class="p-3 text-black hover:text-lime-200 duration-300 transition-colors tracking-wider flex items-center gap-2 ring-2 ring-black group relative isolate overflow-hidden"
          >
             <span>Get going</span>
@@ -29,17 +60,18 @@
             <span
                class="absolute -inset-1.5 bg-black -z-20 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 -skew-x-12"
             ></span>
-         </button>
+         </a>
       </div>
-      <div class="h-full flex items-center justify-center ring-2 ring-black">
-         <img
-            src="./assets/expense.png"
-            alt="illus"
-            class="aspect-square max-w-2xl"
-         />
+      <div
+         class="h-full flex items-center justify-center ring-2 ring-black overflow-hidden"
+      >
+         <img src="./assets/expense.png" alt="illus" class="max-w-2xl" />
       </div>
    </main>
-   <section class="h-screen bg-purple-300 grid grid-cols-2 gap-0.5 mt-0.5">
+   <section
+      class="h-screen bg-purple-300 grid grid-cols-2 gap-0.5 mt-0.5"
+      id="form"
+   >
       <div class="ring-2 ring-black flex items-center justify-center p-12">
          <div
             class="flex flex-col gap-8 bg-purple-500 h-full w-full p-8 ring-2 ring-black"
@@ -60,6 +92,8 @@
             <span class="w-full h-0.5 bg-black/20"></span>
             <form
                class="flex-1 flex flex-col justify-between gap-4 tracking-wide"
+               ref="formClear"
+               @submit.prevent="submited(radio, info, amount)"
             >
                <div class="flex justify-between items-center">
                   <strong class="text-lg">Expense/Payout:</strong>
@@ -72,7 +106,7 @@
                               name="type"
                               id="payout"
                               value="payout"
-                              v-model="picked"
+                              v-model="radio"
                               required
                               class="opacity-0 aspect-square w-6 peer"
                            />
@@ -91,7 +125,7 @@
                               name="type"
                               id="expense"
                               value="expense"
-                              v-model="picked"
+                              v-model="radio"
                               class="opacity-0 aspect-square w-6 peer"
                            />
                            <span
@@ -115,7 +149,9 @@
                         id="info"
                         required
                         autocomplete="off"
-                        class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl font-semibold outline-none"
+                        v-model="info"
+                        placeholder="concise info"
+                        class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl font-semibold outline-none placeholder:text-black/60 placeholder:text-lg placeholder:uppercase"
                      />
                      <span class="p-2 bg-lime-200 ring-2 ring-black">
                         <IconAsterisk :size="28" />
@@ -134,8 +170,11 @@
                         id="amount"
                         required
                         autocomplete="off"
-                        min="1"
-                        class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl font-semibold outline-none"
+                        min="0.1"
+                        step="0.01"
+                        v-model="amount"
+                        placeholder="amount"
+                        class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl font-semibold outline-none placeholder:text-black/60 placeholder:text-lg placeholder:uppercase"
                      />
                      <span class="p-2 bg-lime-200 ring-2 ring-black">
                         <IconAsterisk :size="28" />
