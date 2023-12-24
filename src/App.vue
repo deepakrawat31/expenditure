@@ -2,88 +2,100 @@
    import {
       IconCoins,
       IconCoin,
-      IconPencil,
-      IconArrowRight,
       IconAsterisk,
       IconCheck,
-      IconBread,
+      IconTrash,
+      IconInfoCircle,
+      IconEdit,
    } from "@tabler/icons-vue";
-   import { Ref, ref } from "vue";
+   import { Ref, onMounted, ref } from "vue";
+   import { gsap } from "gsap";
+
+   type Transaction = {
+      id: string;
+      type: string;
+      info: string;
+      amount: number | null;
+   }[];
 
    let radio: Ref<string> = ref("");
    let info: Ref<string> = ref("");
    let amount: Ref<number | null> = ref(null);
-   let toast: Ref<boolean> = ref(false);
+   let transactions: Ref<Transaction> = ref([]);
+   const form: Ref<null> = ref(null);
+   const input: Ref<null> = ref(null);
 
-   const toastUp = () => {
-      toast.value = true;
-      console.log("toast up", toast.value);
-      setTimeout(() => {
-         toast.value = false;
-         console.log("toast down", toast.value);
-      }, 4000);
+   onMounted(() => {
+      const savedTransactions: Transaction = JSON.parse(
+         localStorage.getItem("transactions") || ""
+      );
+
+      if (savedTransactions) {
+         transactions.value = savedTransactions;
+      }
+
+      const tl = gsap.timeline({ delay: 0.8, paused: true });
+
+      tl.from(form.value, {
+         duration: 1,
+         y: "-200",
+         autoAlpha: 0,
+         ease: "back.out(1.8)",
+      });
+      tl.play();
+   });
+
+   const saveToLocal = () => {
+      localStorage.setItem("transactions", JSON.stringify(transactions.value));
    };
 
-   function submited(radio: string, info: string, amount: number | null) {
-      console.log(radio, info, amount);
-      toastUp();
+   function addTransaction(radio: string, info: string, amount: number | null) {
+      let index: string = crypto.randomUUID();
+      transactions.value.push({
+         id: index,
+         type: radio,
+         info: info,
+         amount: amount,
+      });
+
+      saveToLocal();
+
+      this.radio = "";
+      this.info = "";
+      this.amount = null;
    }
+
+   const deleteTransaction = (id: string) => {
+      transactions.value = transactions.value.filter(
+         (transaction) => transaction.id != id
+      );
+      saveToLocal();
+   };
 </script>
 
 <template>
-   <main class="h-screen grid grid-cols-2 gap-0.5 bg-lime-200">
-      <div
-         v-if="toast"
-         class="fixed z-30 top-6 right-6 bg-lime-200 ring-2 ring-black uppercase font-semibold flex gap-0.5 translate-y-8 transition-all"
-         :class="{
-            [`translate-y-0`]: toast,
-         }"
-      >
-         <span class="p-2 ring-2 ring-black">
-            <IconBread />
-         </span>
-         <span class="p-2 tracking-wide">{{ radio }} added</span>
-      </div>
-      <div
-         class="flex flex-col items-start justify-center gap-6 h-full py-8 px-16 ring-2 ring-black"
-      >
-         <span class="font-teko text-9xl leading-[0.8]"
-            >Track your expenses</span
-         >
-         <span class="text-lg">Get a hold of all your purchases.</span>
-         <a
-            href="#form"
-            class="p-3 text-black hover:text-lime-200 duration-300 transition-colors tracking-wider flex items-center gap-2 ring-2 ring-black group relative isolate overflow-hidden"
-         >
-            <span>Get going</span>
-            <IconArrowRight :size="20" />
-            <span
-               class="absolute -inset-1.5 bg-black -z-20 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 -skew-x-12"
-            ></span>
-         </a>
-      </div>
-      <div
-         class="h-full flex items-center justify-center ring-2 ring-black overflow-hidden"
-      >
-         <img src="./assets/expense.png" alt="illus" class="max-w-2xl" />
-      </div>
-   </main>
-   <section
-      class="h-screen bg-purple-300 grid grid-cols-2 gap-0.5 mt-0.5"
-      id="form"
+   <main
+      class="min-h-screen bg-purple-300 grid grid-rows-2 grid-cols-1 lg:grid-rows-1 lg:grid-cols-2 gap-0.5"
    >
-      <div class="ring-2 ring-black flex items-center justify-center p-12">
+      <div
+         class="h-screen ring-2 ring-black flex items-center justify-center p-6 md:p-12 overflow-hidden"
+      >
          <div
-            class="flex flex-col gap-8 bg-purple-500 h-full w-full p-8 ring-2 ring-black"
+            class="flex flex-col gap-8 bg-purple-500 h-full w-full p-4 md:p-8 ring-2 ring-black"
+            ref="form"
          >
             <span class="flex flex-col gap-4">
                <span class="flex justify-start items-center gap-4">
                   <span class="p-3 ring-2 ring-black bg-lime-200"
                      ><IconCoins :size="24"
                   /></span>
-                  <h2 class="font-teko text-4xl">Add Expense/Payout</h2>
+                  <h2 class="font-teko text-3xl md:text-4xl">
+                     Add Expense/Payout
+                  </h2>
                </span>
-               <p class="text-lg max-w-lg tracking-wide text-slate-800">
+               <p
+                  class="text-base md:text-lg max-w-lg tracking-wide text-slate-800"
+               >
                   Add either
                   <strong>expense or payout</strong>
                   in your tracker - and start addressing your funds.
@@ -92,10 +104,11 @@
             <span class="w-full h-0.5 bg-black/20"></span>
             <form
                class="flex-1 flex flex-col justify-between gap-4 tracking-wide"
-               ref="formClear"
-               @submit.prevent="submited(radio, info, amount)"
+               @submit.prevent="addTransaction(radio, info, amount)"
             >
-               <div class="flex justify-between items-center">
+               <div
+                  class="flex flex-col md:flex-row justify-between md:items-center gap-4"
+               >
                   <strong class="text-lg">Expense/Payout:</strong>
                   <span class="flex gap-6 font-semibold">
                      <label for="payout" class="flex items-center gap-2">
@@ -141,7 +154,7 @@
                   <label for="info" class="font-bold text-lg">Info:</label>
                   <span class="flex items-center gap-0.5">
                      <span class="p-2 bg-lime-200 ring-2 ring-black">
-                        <IconPencil :size="28" />
+                        <IconInfoCircle :size="28" />
                      </span>
                      <input
                         type="text"
@@ -191,8 +204,48 @@
             </form>
          </div>
       </div>
-      <div class="ring-2 ring-black"></div>
-   </section>
+      <div class="ring-2 ring-black p-6 md:p-12 overflow-hidden">
+         <div class="flex flex-col gap-4 h-full">
+            <span class="flex flex-col gap-4" ref="input">
+               <span
+                  class="flex gap-0.5"
+                  v-for="transaction in transactions"
+                  :key="transaction.id"
+               >
+                  <span
+                     class="w-full flex flex-col gap-0.5 ring-2 ring-black font-semibold uppercase tracking-wider"
+                  >
+                     <span class="text-xl ring-2 ring-black p-2 bg-lime-200">{{
+                        transaction.info
+                     }}</span>
+                     <span
+                        class="text-xl ring-2 ring-black p-2"
+                        :class="
+                           transaction.type === 'payout'
+                              ? 'bg-lime-200'
+                              : 'bg-rose-300'
+                        "
+                        >{{ transaction.amount }}$</span
+                     >
+                  </span>
+                  <span class="flex flex-col gap-0.5">
+                     <button
+                        class="p-2 ring-2 ring-black flex justify-center bg-indigo-300"
+                     >
+                        <IconEdit :size="28" />
+                     </button>
+                     <button
+                        class="p-2 ring-2 ring-black flex justify-center bg-rose-300"
+                        @click="deleteTransaction(transaction.id)"
+                     >
+                        <IconTrash :size="28" />
+                     </button>
+                  </span>
+               </span>
+            </span>
+         </div>
+      </div>
+   </main>
 </template>
 
 <style scoped>
