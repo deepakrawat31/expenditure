@@ -1,29 +1,34 @@
 <script setup lang="ts">
    import {
       IconCoins,
-      IconCoin,
       IconAsterisk,
       IconCheck,
       IconTrash,
       IconInfoCircle,
       IconEdit,
+      IconWallet,
+      IconX,
    } from "@tabler/icons-vue";
-   import { Ref, onMounted, ref } from "vue";
+   import { Ref, computed, onMounted, ref } from "vue";
    import { gsap } from "gsap";
 
    type Transaction = {
       id: string;
       type: string;
       info: string;
-      amount: number | null;
+      amount: number;
    }[];
 
    let radio: Ref<string> = ref("");
    let info: Ref<string> = ref("");
-   let amount: Ref<number | null> = ref(null);
+   let editInfo: Ref<string> = ref("");
+   let amount: Ref<number> = ref(0);
+   let editAmount: Ref<number> = ref(0);
    let transactions: Ref<Transaction> = ref([]);
+   let editPan: Ref<boolean> = ref(false);
+   let editId: Ref<string> = ref("");
    const form: Ref<null> = ref(null);
-   const input: Ref<null> = ref(null);
+   const output: Ref<null> = ref(null);
 
    onMounted(() => {
       const savedTransactions: Transaction = JSON.parse(
@@ -34,9 +39,15 @@
          transactions.value = savedTransactions;
       }
 
-      const tl = gsap.timeline({ delay: 0.8, paused: true });
+      const tl = gsap.timeline({ delay: 0.5, paused: true });
 
       tl.from(form.value, {
+         duration: 1,
+         y: "-200",
+         autoAlpha: 0,
+         ease: "back.out(1.8)",
+      });
+      tl.from(output.value, {
          duration: 1,
          y: "-200",
          autoAlpha: 0,
@@ -49,7 +60,7 @@
       localStorage.setItem("transactions", JSON.stringify(transactions.value));
    };
 
-   function addTransaction(radio: string, info: string, amount: number | null) {
+   function addTransaction(radio: string, info: string, amount: number) {
       let index: string = crypto.randomUUID();
       transactions.value.push({
          id: index,
@@ -62,7 +73,7 @@
 
       this.radio = "";
       this.info = "";
-      this.amount = null;
+      this.amount = 0;
    }
 
    const deleteTransaction = (id: string) => {
@@ -71,6 +82,27 @@
       );
       saveToLocal();
    };
+
+   const editTransaction = (id: string) => {
+      transactions.value.map((transition) => {
+         if (id === transition.id) {
+            transition.info = editInfo.value;
+            transition.amount = editAmount.value;
+            saveToLocal();
+            editPan.value = false;
+         }
+      });
+   };
+
+   const balance = computed(() => {
+      return transactions.value.reduce((acc, transaction) => {
+         if (transaction.type === "payout") {
+            return acc + transaction.amount;
+         } else {
+            return acc - transaction.amount;
+         }
+      }, 0);
+   });
 </script>
 
 <template>
@@ -86,8 +118,8 @@
          >
             <span class="flex flex-col gap-4">
                <span class="flex justify-start items-center gap-4">
-                  <span class="p-3 ring-2 ring-black bg-lime-200"
-                     ><IconCoins :size="24"
+                  <span class="p-2.5 ring-2 ring-black bg-lime-200"
+                     ><IconCoins :size="28"
                   /></span>
                   <h2 class="font-teko text-3xl md:text-4xl">
                      Add Expense/Payout
@@ -163,8 +195,8 @@
                         required
                         autocomplete="off"
                         v-model="info"
-                        placeholder="concise info"
-                        class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl font-semibold outline-none placeholder:text-black/60 placeholder:text-lg placeholder:uppercase"
+                        placeholder="info"
+                        class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl uppercase tracking-wider font-semibold outline-none placeholder:text-black/60 placeholder:text-lg placeholder:uppercase"
                      />
                      <span class="p-2 bg-lime-200 ring-2 ring-black">
                         <IconAsterisk :size="28" />
@@ -175,7 +207,7 @@
                   <label for="amount" class="font-bold text-lg">Amount:</label>
                   <span class="flex items-center gap-0.5">
                      <span class="p-2 bg-lime-200 ring-2 ring-black">
-                        <IconCoin :size="28" />
+                        <IconCoins :size="28" />
                      </span>
                      <input
                         type="number"
@@ -187,7 +219,7 @@
                         step="0.01"
                         v-model="amount"
                         placeholder="amount"
-                        class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl font-semibold outline-none placeholder:text-black/60 placeholder:text-lg placeholder:uppercase"
+                        class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl uppercase tracking-wider font-semibold outline-none placeholder:text-black/60 placeholder:text-lg placeholder:uppercase"
                      />
                      <span class="p-2 bg-lime-200 ring-2 ring-black">
                         <IconAsterisk :size="28" />
@@ -197,45 +229,66 @@
                <div
                   class="p-3 bg-lime-200 ring-2 ring-black text-lg font-semibold"
                >
-                  <button type="submit" class="tracking-wide w-full">
-                     Add
+                  <button type="submit" class="tracking-wider w-full">
+                     ADD
                   </button>
                </div>
             </form>
          </div>
       </div>
-      <div class="ring-2 ring-black p-6 md:p-12 overflow-hidden">
-         <div class="flex flex-col gap-4 h-full">
-            <span class="flex flex-col gap-4" ref="input">
+      <div class="ring-2 ring-black p-6 md:p-12 h-screen">
+         <div class="flex flex-col gap-4 h-full" ref="output">
+            <span class="flex items-center justify-between gap-0.5 p-1">
+               <span class="ring-2 ring-black p-2 bg-purple-400"
+                  ><IconWallet :size="28" />
+               </span>
+               <span
+                  class="flex-1 flex justify-between items-center text-xl font-semibold uppercase tracking-wider ring-2 ring-black p-2 bg-purple-400"
+               >
+                  <span>balance</span>
+                  <span>{{ balance }}</span>
+               </span>
+            </span>
+            <span
+               class="flex-1 flex flex-col-reverse justify-end gap-4 p-1 overflow-hidden"
+            >
                <span
                   class="flex gap-0.5"
                   v-for="transaction in transactions"
                   :key="transaction.id"
                >
                   <span
-                     class="w-full flex flex-col gap-0.5 ring-2 ring-black font-semibold uppercase tracking-wider"
+                     class="w-full flex flex-col gap-0.5 text-xl font-semibold uppercase tracking-wider"
                   >
-                     <span class="text-xl ring-2 ring-black p-2 bg-lime-200">{{
+                     <span class="ring-2 ring-black p-2 bg-lime-200">{{
                         transaction.info
                      }}</span>
                      <span
-                        class="text-xl ring-2 ring-black p-2"
+                        class="ring-2 ring-black p-2"
                         :class="
                            transaction.type === 'payout'
                               ? 'bg-lime-200'
                               : 'bg-rose-300'
                         "
-                        >{{ transaction.amount }}$</span
+                        >{{ transaction.amount }}</span
                      >
                   </span>
                   <span class="flex flex-col gap-0.5">
                      <button
-                        class="p-2 ring-2 ring-black flex justify-center bg-indigo-300"
+                        class="p-2 ring-2 ring-black bg-purple-400"
+                        @click="
+                           () => {
+                              editId = transaction.id;
+                              editInfo = transaction.info;
+                              editAmount = transaction.amount;
+                              editPan = true;
+                           }
+                        "
                      >
                         <IconEdit :size="28" />
                      </button>
                      <button
-                        class="p-2 ring-2 ring-black flex justify-center bg-rose-300"
+                        class="p-2 ring-2 ring-black bg-rose-300"
                         @click="deleteTransaction(transaction.id)"
                      >
                         <IconTrash :size="28" />
@@ -244,6 +297,78 @@
                </span>
             </span>
          </div>
+      </div>
+      <div
+         v-if="editPan"
+         class="fixed z-20 inset-0 bg-slate-900/40 flex items-center justify-center p-4"
+      >
+         <span
+            class="max-w-lg w-full bg-purple-500 ring-2 ring-black flex flex-col gap-6 p-4 md:p-8"
+         >
+            <span class="flex items-center justify-between w-full">
+               <span class="font-bold text-4xl uppercase font-teko">Edit</span>
+               <button
+                  @click="
+                     () => {
+                        editPan = false;
+                     }
+                  "
+                  class="p-2 ring-2 ring-black bg-rose-300 w-fit"
+               >
+                  <IconX :size="28" />
+               </button>
+            </span>
+            <form
+               @submit.prevent="editTransaction(editId)"
+               class="w-full flex flex-col gap-8"
+            >
+               <div class="flex flex-col gap-2">
+                  <label for="edit-info" class="font-bold text-lg">Info:</label>
+                  <span class="flex items-center gap-0.5">
+                     <span class="p-2 bg-lime-200 ring-2 ring-black">
+                        <IconInfoCircle :size="28" />
+                     </span>
+                     <input
+                        type="text"
+                        name="edit-info"
+                        id="edit-info"
+                        autocomplete="off"
+                        v-model="editInfo"
+                        placeholder="info"
+                        class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl uppercase tracking-wider font-semibold outline-none placeholder:text-black/60 placeholder:text-lg placeholder:uppercase"
+                     />
+                  </span>
+               </div>
+               <div class="flex flex-col gap-2">
+                  <label for="edit-amount" class="font-bold text-lg"
+                     >Amount:</label
+                  >
+                  <span class="flex items-center gap-0.5">
+                     <span class="p-2 bg-lime-200 ring-2 ring-black">
+                        <IconCoins :size="28" />
+                     </span>
+                     <input
+                        type="number"
+                        name="edit-amount"
+                        id="edit-amount"
+                        autocomplete="off"
+                        min="0.1"
+                        step="0.01"
+                        v-model="editAmount"
+                        placeholder="amount"
+                        class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl uppercase tracking-wider font-semibold outline-none placeholder:text-black/60 placeholder:text-lg placeholder:uppercase"
+                     />
+                  </span>
+               </div>
+               <div
+                  class="p-3 bg-lime-200 ring-2 ring-black text-lg font-semibold"
+               >
+                  <button type="submit" class="tracking-wider w-full">
+                     SAVE
+                  </button>
+               </div>
+            </form>
+         </span>
       </div>
    </main>
 </template>
