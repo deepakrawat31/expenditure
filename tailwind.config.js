@@ -8,5 +8,5 @@ export default {
          teko: ["Teko", "sans-serif"],
       },
    },
-   plugins: [],
+   plugins: [require("tailwind-scrollbar")],
 };

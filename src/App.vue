@@ -250,51 +250,55 @@
                </span>
             </span>
             <span
-               class="flex-1 flex flex-col-reverse justify-end gap-4 p-1 overflow-hidden"
+               class="flex-1 overflow-y-scroll relative scrollbar-thin scrollbar-thumb-slate-500 hover:scrollbar-thumb-slate-400 active:scrollbar-thumb-slate-500 scrollbar-track-slate-200"
             >
-               <span
-                  class="flex gap-0.5"
-                  v-for="transaction in transactions"
-                  :key="transaction.id"
+               <ul
+                  class="flex flex-col-reverse justify-end gap-4 absolute inset-0 px-1 pt-1 pb-4"
                >
-                  <span
-                     class="w-full flex flex-col gap-0.5 text-xl font-semibold uppercase tracking-wider"
+                  <li
+                     class="flex gap-0.5"
+                     v-for="transaction in transactions"
+                     :key="transaction.id"
                   >
-                     <span class="ring-2 ring-black p-2 bg-lime-200">{{
-                        transaction.info
-                     }}</span>
                      <span
-                        class="ring-2 ring-black p-2"
-                        :class="
-                           transaction.type === 'payout'
-                              ? 'bg-lime-200'
-                              : 'bg-rose-300'
-                        "
-                        >{{ transaction.amount }}</span
+                        class="w-full flex flex-col gap-0.5 text-xl font-semibold uppercase tracking-wider"
                      >
-                  </span>
-                  <span class="flex flex-col gap-0.5">
-                     <button
-                        class="p-2 ring-2 ring-black bg-purple-400"
-                        @click="
-                           () => {
-                              editId = transaction.id;
-                              editInfo = transaction.info;
-                              editAmount = transaction.amount;
-                              editPan = true;
-                           }
-                        "
-                     >
-                        <IconEdit :size="28" />
-                     </button>
-                     <button
-                        class="p-2 ring-2 ring-black bg-rose-300"
-                        @click="deleteTransaction(transaction.id)"
-                     >
-                        <IconTrash :size="28" />
-                     </button>
-                  </span>
-               </span>
+                        <span class="ring-2 ring-black p-2 bg-lime-200">{{
+                           transaction.info
+                        }}</span>
+                        <span
+                           class="ring-2 ring-black p-2"
+                           :class="
+                              transaction.type === 'payout'
+                                 ? 'bg-lime-200'
+                                 : 'bg-rose-300'
+                           "
+                           >{{ transaction.amount }}</span
+                        >
+                     </span>
+                     <span class="flex flex-col gap-0.5">
+                        <button
+                           class="p-2 ring-2 ring-black bg-purple-400"
+                           @click="
+                              () => {
+                                 editId = transaction.id;
+                                 editInfo = transaction.info;
+                                 editAmount = transaction.amount;
+                                 editPan = true;
+                              }
+                           "
+                        >
+                           <IconEdit :size="28" />
+                        </button>
+                        <button
+                           class="p-2 ring-2 ring-black bg-rose-300"
+                           @click="deleteTransaction(transaction.id)"
+                        >
+                           <IconTrash :size="28" />
+                        </button>
+                     </span>
+                  </li>
+               </ul>
             </span>
          </div>
       </div>
@@ -306,7 +310,7 @@
             class="max-w-lg w-full bg-purple-500 ring-2 ring-black flex flex-col gap-6 p-4 md:p-8"
          >
             <span class="flex items-center justify-between w-full">
-               <span class="font-bold text-4xl uppercase font-teko">Edit</span>
+               <span class="font-bold text-5xl capitalize font-teko">Edit</span>
                <button
                   @click="
                      () => {
@@ -335,6 +339,7 @@
                         autocomplete="off"
                         v-model="editInfo"
                         placeholder="info"
+                        required
                         class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl uppercase tracking-wider font-semibold outline-none placeholder:text-black/60 placeholder:text-lg placeholder:uppercase"
                      />
                   </span>
@@ -356,6 +361,7 @@
                         step="0.01"
                         v-model="editAmount"
                         placeholder="amount"
+                        required
                         class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl uppercase tracking-wider font-semibold outline-none placeholder:text-black/60 placeholder:text-lg placeholder:uppercase"
                      />
                   </span>
