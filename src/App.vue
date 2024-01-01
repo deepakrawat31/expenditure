@@ -19,7 +19,7 @@
       amount: number;
    }[];
 
-   let radio: Ref<string> = ref("");
+   let radio: Ref<string> = ref("payout");
    let info: Ref<string> = ref("");
    let editInfo: Ref<string> = ref("");
    let amount: Ref<number> = ref(0);
@@ -71,9 +71,9 @@
 
       saveToLocal();
 
-      this.radio = "";
       this.info = "";
       this.amount = 0;
+      this.radio = "payout";
    }
 
    const deleteTransaction = (id: string) => {
@@ -250,7 +250,7 @@
                </span>
             </span>
             <span
-               class="flex-1 overflow-y-scroll relative scrollbar-thin scrollbar-thumb-slate-500 hover:scrollbar-thumb-slate-400 active:scrollbar-thumb-slate-500 scrollbar-track-slate-200"
+               class="flex-1 overflow-y-auto relative scrollbar-thin scrollbar-thumb-slate-500 hover:scrollbar-thumb-slate-400 active:scrollbar-thumb-slate-500 scrollbar-track-slate-200"
             >
                <ul
                   class="flex flex-col-reverse justify-end gap-4 absolute inset-0 px-1 pt-1 pb-4"
