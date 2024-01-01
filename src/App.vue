@@ -19,16 +19,31 @@
       amount: number;
    }[];
 
-   var radio: Ref<string> = ref("payout");
-   var info: Ref<string> = ref("");
+   // var radio: Ref<string> = ref("payout");
+   // var info: Ref<string> = ref("");
    let editInfo: Ref<string> = ref("");
-   var amount: Ref<number> = ref(0);
+   // var amount: Ref<number> = ref(0);
    let editAmount: Ref<number> = ref(0);
    let transactions: Ref<Transaction> = ref([]);
    let editPan: Ref<boolean> = ref(false);
    let editId: Ref<string> = ref("");
    const form: Ref<null> = ref(null);
    const output: Ref<null> = ref(null);
+
+   let transactionForm: Ref<{ radio: string; info: string; amount: number }> =
+      ref({
+         radio: "payout",
+         info: "",
+         amount: 0,
+      });
+
+   const resetForm = () => {
+      Object.assign(transactionForm.value, {
+         radio: "payout",
+         info: "",
+         amount: 0,
+      });
+   };
 
    onMounted(() => {
       const savedTransactions: Transaction = JSON.parse(
@@ -60,20 +75,18 @@
       localStorage.setItem("transactions", JSON.stringify(transactions.value));
    };
 
-   function addTransaction(radio: string, info: string, amount: number) {
+   function addTransaction(rad: string, inf: string, amt: number) {
       let index: string = crypto.randomUUID();
       transactions.value.push({
          id: index,
-         type: radio,
-         info: info,
-         amount: amount,
+         type: rad,
+         info: inf,
+         amount: amt,
       });
 
       saveToLocal();
 
-      this.info = "";
-      this.amount = 0;
-      this.radio = "payout";
+      resetForm();
    }
 
    const deleteTransaction = (id: string) => {
@@ -136,7 +149,13 @@
             <span class="w-full h-0.5 bg-black/20"></span>
             <form
                class="flex-1 flex flex-col justify-between gap-4 tracking-wide"
-               @submit.prevent="addTransaction(radio, info, amount)"
+               @submit.prevent="
+                  addTransaction(
+                     transactionForm.radio,
+                     transactionForm.info,
+                     transactionForm.amount
+                  )
+               "
             >
                <div
                   class="flex flex-col md:flex-row justify-between md:items-center gap-4"
@@ -151,7 +170,7 @@
                               name="type"
                               id="payout"
                               value="payout"
-                              v-model="radio"
+                              v-model="transactionForm.radio"
                               required
                               class="opacity-0 aspect-square w-6 peer"
                            />
@@ -170,7 +189,7 @@
                               name="type"
                               id="expense"
                               value="expense"
-                              v-model="radio"
+                              v-model="transactionForm.radio"
                               class="opacity-0 aspect-square w-6 peer"
                            />
                            <span
@@ -194,7 +213,7 @@
                         id="info"
                         required
                         autocomplete="off"
-                        v-model="info"
+                        v-model="transactionForm.info"
                         placeholder="info"
                         class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl uppercase tracking-wider font-semibold outline-none placeholder:text-black/60 placeholder:text-lg placeholder:uppercase"
                      />
@@ -217,7 +236,7 @@
                         autocomplete="off"
                         min="0.1"
                         step="0.01"
-                        v-model="amount"
+                        v-model="transactionForm.amount"
                         placeholder="amount"
                         class="bg-lime-200 h-11 w-full ring-2 ring-black px-2 text-xl uppercase tracking-wider font-semibold outline-none placeholder:text-black/60 placeholder:text-lg placeholder:uppercase"
                      />
