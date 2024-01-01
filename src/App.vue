@@ -71,7 +71,7 @@
 
       saveToLocal();
 
-      this.info = "";
+      this.info = null;
       this.amount = 0;
       this.radio = "payout";
    }
