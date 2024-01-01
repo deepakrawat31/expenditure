@@ -19,10 +19,10 @@
       amount: number;
    }[];
 
-   let radio: Ref<string> = ref("payout");
-   let info: Ref<string> = ref("");
+   var radio: Ref<string> = ref("payout");
+   var info: Ref<string> = ref("");
    let editInfo: Ref<string> = ref("");
-   let amount: Ref<number> = ref(0);
+   var amount: Ref<number> = ref(0);
    let editAmount: Ref<number> = ref(0);
    let transactions: Ref<Transaction> = ref([]);
    let editPan: Ref<boolean> = ref(false);
@@ -71,7 +71,7 @@
 
       saveToLocal();
 
-      this.info = null;
+      this.info = "";
       this.amount = 0;
       this.radio = "payout";
    }
